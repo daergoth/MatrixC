@@ -1,25 +1,24 @@
 package com.fordprog.matrix;
 
-import com.fordprog.matrix.interpreter.SemanticListener;
-import org.antlr.v4.runtime.ANTLRFileStream;
-import org.antlr.v4.runtime.CommonTokenStream;
-import org.antlr.v4.runtime.tree.ParseTree;
-import org.antlr.v4.runtime.tree.ParseTreeWalker;
+import static java.util.stream.Collectors.joining;
+
+import com.fordprog.matrix.interpreter.Interpreter;
 
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
 public class Main {
 
   public static void main(String[] args) throws IOException {
 
-    final MatrixLexer matrixLexer = new MatrixLexer(new ANTLRFileStream(args[0]));
+    String path = "src/main/resources/input.mxc";
 
-    final MatrixParser matrixParser = new MatrixParser(new CommonTokenStream(matrixLexer));
+    String inputCode = Files.readAllLines(Paths.get(path)).stream().collect(joining("\n"));
 
-    ParseTree parseTree = matrixParser.program();
+    Interpreter interpreter = new Interpreter(inputCode);
 
-    ParseTreeWalker.DEFAULT.walk(new SemanticListener(), parseTree);
-
+    interpreter.interpret();
   }
 
 }

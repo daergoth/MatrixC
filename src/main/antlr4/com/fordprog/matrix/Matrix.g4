@@ -9,7 +9,12 @@ declaration
     ;
 
 functionDecl
-    : 'function' (type | 'void') id LPAREN functionDeclParameterList? RPAREN block
+    : 'function' returnType id LPAREN functionDeclParameterList? RPAREN block
+    ;
+
+returnType
+    : type
+    | 'void'
     ;
 
 functionDeclParameterList

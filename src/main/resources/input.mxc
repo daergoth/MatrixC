@@ -1,0 +1,24 @@
+rational a = 1|1;
+
+function void main() {
+  a = 1|1;
+}
+
+function rational asd(rational as) {
+
+  rational b = 3|1;
+
+  if (b) {
+    if (as) {
+      rational h = 1|1;
+      return h;
+    } else {
+      rational g = 2|1;
+      return g;
+    }
+  } else {
+
+    return b;
+  }
+
+}

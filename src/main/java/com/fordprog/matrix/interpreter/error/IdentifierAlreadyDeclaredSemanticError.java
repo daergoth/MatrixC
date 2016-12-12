@@ -18,7 +18,7 @@ public class IdentifierAlreadyDeclaredSemanticError extends SemanticError {
 
   @Override
   public String getMessage() {
-    return "Symbol with identifier \'" + identifier + "\' already declared at"
-        + originalDeclaration;
+    return "Symbol with identifier \'" + identifier + "\' already declared at "
+        + originalDeclaration + ". Duplicate at " + getCodePoint();
   }
 }
