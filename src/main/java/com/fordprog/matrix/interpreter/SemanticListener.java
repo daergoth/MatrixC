@@ -6,7 +6,6 @@ import static com.fordprog.matrix.MatrixParser.BinOperatorExpressionContext;
 import static com.fordprog.matrix.MatrixParser.BlockContext;
 import static com.fordprog.matrix.MatrixParser.BlockStatementContext;
 import static com.fordprog.matrix.MatrixParser.ControllBlockStatementContext;
-import static com.fordprog.matrix.MatrixParser.DeclarationContext;
 import static com.fordprog.matrix.MatrixParser.ExprLogicExpressionContext;
 import static com.fordprog.matrix.MatrixParser.ForStatementContext;
 import static com.fordprog.matrix.MatrixParser.FunctionCallContext;
@@ -17,12 +16,15 @@ import static com.fordprog.matrix.MatrixParser.FunctionDeclParameterListContext;
 import static com.fordprog.matrix.MatrixParser.IdContext;
 import static com.fordprog.matrix.MatrixParser.IdTermContext;
 import static com.fordprog.matrix.MatrixParser.IfElseStatementContext;
+import static com.fordprog.matrix.MatrixParser.MatrixContext;
+import static com.fordprog.matrix.MatrixParser.Matrix_rowContext;
 import static com.fordprog.matrix.MatrixParser.ParenthesisExpressionContext;
 import static com.fordprog.matrix.MatrixParser.ProgramContext;
 import static com.fordprog.matrix.MatrixParser.RelationLogicExpressionContext;
 import static com.fordprog.matrix.MatrixParser.ReturnStatementContext;
 import static com.fordprog.matrix.MatrixParser.SimpleStatementStatementContext;
 import static com.fordprog.matrix.MatrixParser.StatementContext;
+import static com.fordprog.matrix.MatrixParser.VariableDeclarationContext;
 
 import com.fordprog.matrix.MatrixBaseListener;
 import com.fordprog.matrix.MatrixParser;
@@ -30,6 +32,7 @@ import com.fordprog.matrix.interpreter.error.AssignmentToFunctionSemanticError;
 import com.fordprog.matrix.interpreter.error.AssignmentWithVoidFunctionSemanticError;
 import com.fordprog.matrix.interpreter.error.FunctionCallExpectedSemanticError;
 import com.fordprog.matrix.interpreter.error.IdentifierAlreadyDeclaredSemanticError;
+import com.fordprog.matrix.interpreter.error.IllformedMatrixSemanticError;
 import com.fordprog.matrix.interpreter.error.InvalidMainFunctionSignatureSemanticError;
 import com.fordprog.matrix.interpreter.error.MissingMainFunctionSemanticError;
 import com.fordprog.matrix.interpreter.error.MissingReturnInFunctionSemanticError;
@@ -98,8 +101,9 @@ public class SemanticListener extends MatrixBaseListener {
 
   }
 
+
   @Override
-  public void exitDeclaration(DeclarationContext ctx) {
+  public void exitVariableDeclaration(VariableDeclarationContext ctx) {
     Type declareType = Type.valueOf(ctx.type().getText().toUpperCase());
 
     // We have to check if the scope already has a declaration with the given identifier
@@ -382,9 +386,23 @@ public class SemanticListener extends MatrixBaseListener {
 
   }
 
+  @Override
+  public void exitMatrix(MatrixContext ctx) {
+    List<MatrixParser.Matrix_rowContext> matrixRowContexts = ctx.matrix_row();
+
+    int columnNum = matrixRowContexts.get(0).matrix_element().size();
+    for (Matrix_rowContext rowContext : matrixRowContexts) {
+      if (rowContext.matrix_element().size() != columnNum) {
+        semanticErrors.add(new IllformedMatrixSemanticError(CodePoint.from(ctx)));
+
+        return;
+      }
+    }
+  }
+
   /*
-           * Helper private methods
-           */
+             * Helper private methods
+             */
   private boolean checkIfIndentifierNotInScope(IdContext idContext) {
     String identifier = idContext.getText();
 
@@ -410,7 +428,7 @@ public class SemanticListener extends MatrixBaseListener {
     List<Symbol> parameterSymbols = getFunctionParameters(ctx.functionDeclParameterList());
 
     UserDefinedFunction function =
-        new UserDefinedFunction(returnType, parameterSymbols);
+        new UserDefinedFunction(returnType, parameterSymbols, ctx);
 
     functions.put(ctx, function);
 

@@ -1,10 +1,15 @@
 grammar Matrix;
 
 program
-    : (declaration SEMI | functionDecl)+ EOF
+    : symbolDeclaration+ EOF
     ;
 
-declaration
+symbolDeclaration
+    : variableDeclaration SEMI
+    | functionDecl
+    ;
+
+variableDeclaration
     : type id '=' expr
     ;
 
@@ -18,7 +23,7 @@ returnType
     ;
 
 functionDeclParameterList
-    : functionDeclParameter functionDeclParameter*
+    : functionDeclParameter (COMMA functionDeclParameter)*
     ;
 
 functionDeclParameter
@@ -35,7 +40,7 @@ statement
     ;
 
 simpleStatement
-    : declaration                                                               # declareStatement
+    : variableDeclaration                                                               # declareStatement
     | id '=' expr                                                               # assignStatement
     | functionCall                                                              # functionCallStatement
     | 'return' expr                                                             # returnStatement
@@ -45,7 +50,7 @@ controllBlock
     : 'if' parenLogicExpr block                                                                     # ifStatement
     | 'if' parenLogicExpr ifBlock=block 'else' elseBlock=block                                      # ifElseStatement
     | 'while' parenLogicExpr block                                                                  # whileStatement
-    | 'for' LPAREN decl=declaration SEMI logic=logicExpr SEMI update=simpleStatement RPAREN block   # forStatement
+    | 'for' LPAREN decl=variableDeclaration SEMI logic=logicExpr SEMI update=simpleStatement RPAREN block   # forStatement
     | block                                                                                         # blockStatement
     ;
 
@@ -103,12 +108,7 @@ matrixType
     ;
 
 rational
-    : rationalPart '|' rationalPart
-    ;
-
-rationalPart
-    : INTEGER
-    | id
+    : INTEGER '|' INTEGER
     ;
 
 matrix
@@ -116,7 +116,12 @@ matrix
     ;
 
 matrix_row
-    : LBRACE INTEGER (COMMA INTEGER)* RBRACE
+    : LBRACE matrix_element (COMMA matrix_element)* RBRACE
+    ;
+
+matrix_element
+    : rational
+    | id
     ;
 
 relation

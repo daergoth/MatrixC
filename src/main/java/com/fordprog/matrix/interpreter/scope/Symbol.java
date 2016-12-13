@@ -1,11 +1,13 @@
 package com.fordprog.matrix.interpreter.scope;
 
 import com.fordprog.matrix.interpreter.CodePoint;
+import com.fordprog.matrix.interpreter.type.Matrix;
+import com.fordprog.matrix.interpreter.type.Rational;
 import com.fordprog.matrix.interpreter.type.Type;
 
 import java.util.Objects;
 
-public class Symbol<T> {
+public class Symbol {
 
   private final String identifier;
 
@@ -13,9 +15,9 @@ public class Symbol<T> {
 
   private final CodePoint firstOccurrence;
 
-  private T value;
+  private Object value;
 
-  public Symbol(String identifier, Type type, CodePoint firstOccurrence, T value) {
+  public Symbol(String identifier, Type type, CodePoint firstOccurrence, Object value) {
     this.identifier = identifier;
     this.type = type;
     this.firstOccurrence = firstOccurrence;
@@ -34,12 +36,32 @@ public class Symbol<T> {
     return firstOccurrence;
   }
 
-  public T getValue() {
+  public Object getValue() {
     return value;
   }
 
-  public void setValue(T value) {
-    this.value = value;
+  public Object getValue(Type targetType) {
+    if (targetType == Type.MATRIX) {
+      return Matrix.fromRational((Rational) value);
+    } else {
+      return Rational.fromMatrix((Matrix) value);
+    }
+  }
+
+  public void setValue(Object value, Type sourceType) {
+
+    if (type == sourceType) {
+      if (type == Type.RATIONAL) {
+        this.value = new Rational((Rational) value);
+      } else {
+        this.value = new Matrix((Matrix) value);
+      }
+    } else if (type == Type.MATRIX) {
+      this.value = Matrix.fromRational((Rational) value);
+    } else {
+      this.value = Rational.fromMatrix((Matrix) value);
+    }
+
   }
 
   public static Builder builder() {
@@ -79,8 +101,8 @@ public class Symbol<T> {
       return this;
     }
 
-    public Symbol<T> build() {
-      return new Symbol<T>(
+    public Symbol build() {
+      return new Symbol(
           Objects.requireNonNull(identifier),
           Objects.requireNonNull(type),
           Objects.requireNonNull(firstOccurrence),

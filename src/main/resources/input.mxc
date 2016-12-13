@@ -1,12 +1,10 @@
 rational a = 1|1;
 
-function void main() {
-  a = 1|1;
-}
-
 function rational asd(rational as) {
 
   rational b = 3|1;
+
+  matrix m = {{1|1, 4|1}, {2|1, 2|1}};
 
   if (b) {
     if (as) {
@@ -21,4 +19,10 @@ function rational asd(rational as) {
     return b;
   }
 
+}
+
+function void main() {
+  a = 1|1;
+
+  matrix m = asd(a);
 }

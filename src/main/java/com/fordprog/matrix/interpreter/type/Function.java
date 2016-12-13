@@ -1,11 +1,12 @@
 package com.fordprog.matrix.interpreter.type;
 
 
+import com.fordprog.matrix.interpreter.execution.FunctionVisitor;
 import com.fordprog.matrix.interpreter.scope.Symbol;
 
 import java.util.List;
 
-public class Function {
+public abstract class Function {
 
   private final Type returnType;
 
@@ -23,4 +24,6 @@ public class Function {
   public List<Symbol> getParameterList() {
     return parameterList;
   }
+
+  public abstract void invoke(FunctionVisitor functionVisitor);
 }

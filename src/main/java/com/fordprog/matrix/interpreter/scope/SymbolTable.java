@@ -48,4 +48,12 @@ public class SymbolTable {
   public Symbol getSymbol(String symbolName) {
     return currentScope.getSymbol(symbolName);
   }
+
+  public Scope getScope(ParserRuleContext context) {
+    return scopeMap.get(context);
+  }
+
+  public Scope getCurrentScope() {
+    return currentScope;
+  }
 }
