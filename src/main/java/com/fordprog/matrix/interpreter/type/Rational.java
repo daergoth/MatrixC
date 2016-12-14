@@ -41,4 +41,9 @@ public class Rational {
     return value.getDenominator();
   }
 
+  @Override
+  public String toString() {
+    return String.valueOf(value.getNumerator()) + "|" +
+        String.valueOf(value.getDenominator());
+  }
 }

@@ -41,6 +41,10 @@ public class Symbol {
   }
 
   public Object getValue(Type targetType) {
+    if (type == targetType) {
+      return value;
+    }
+
     if (targetType == Type.MATRIX) {
       return Matrix.fromRational((Rational) value);
     } else {
@@ -49,6 +53,11 @@ public class Symbol {
   }
 
   public void setValue(Object value, Type sourceType) {
+    if (value == null) {
+      this.value = value;
+
+      return;
+    }
 
     if (type == sourceType) {
       if (type == Type.RATIONAL) {
@@ -68,14 +77,14 @@ public class Symbol {
     return new Builder();
   }
 
-  public static final class Builder<T> {
+  public static final class Builder {
     private String identifier = null;
 
     private Type type = null;
 
     private CodePoint firstOccurrence = null;
 
-    private T value = null;
+    private Object value;
 
     public Builder identifier(String identifier) {
       this.identifier = identifier;
@@ -95,7 +104,7 @@ public class Symbol {
       return this;
     }
 
-    public Builder value(T value) {
+    public Builder value(Object value) {
       this.value = value;
 
       return this;

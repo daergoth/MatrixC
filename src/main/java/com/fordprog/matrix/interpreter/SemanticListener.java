@@ -66,18 +66,22 @@ public class SemanticListener extends MatrixBaseListener {
 
   private final ParseTreeProperty<Type> expressionTypes;
 
+  private final List<Symbol> builtinDeclarations;
 
-  public SemanticListener() {
+
+  public SemanticListener(List<Symbol> builtinDeclarations) {
     this.semanticErrors = new LinkedList<>();
 
     this.expressionTypes = new ParseTreeProperty<>();
 
     this.functions = new ParseTreeProperty<>();
+
+    this.builtinDeclarations = builtinDeclarations;
   }
 
   @Override
   public void enterProgram(ProgramContext ctx) {
-    symbolTable = new SymbolTable(ctx);
+    symbolTable = new SymbolTable(ctx, builtinDeclarations);
   }
 
   @Override

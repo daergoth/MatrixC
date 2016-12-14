@@ -280,7 +280,7 @@ public class CodeExecutor implements FunctionVisitor {
 
   private void executeFunction(FunctionDeclContext functionDeclContext) {
 
-    symbolTable.newScope(functionDeclContext);
+    symbolTable.newScope(functionDeclContext.block());
 
     executeBlock(functionDeclContext.block());
 
@@ -289,14 +289,20 @@ public class CodeExecutor implements FunctionVisitor {
   }
 
   private boolean executeBlock(BlockContext block) {
+    symbolTable.newScope(block);
+
     for (StatementContext statementContext : block.statement()) {
       if (statementContext instanceof SimpleStatementStatementContext) {
-        return executeSimpleStatement(
-            ((SimpleStatementStatementContext) statementContext).simpleStatement());
+        if (executeSimpleStatement(
+            ((SimpleStatementStatementContext) statementContext).simpleStatement())) {
+          return true;
+        }
 
       } else {
-        return executeControllBlock(
-            ((ControllBlockStatementContext) statementContext).controllBlock());
+        if (executeControllBlock(
+            ((ControllBlockStatementContext) statementContext).controllBlock())) {
+          return true;
+        }
 
       }
     }

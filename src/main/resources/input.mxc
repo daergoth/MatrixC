@@ -4,8 +4,6 @@ function rational asd(rational as) {
 
   rational b = 3|1;
 
-  matrix m = {{1|1, 4|1}, {2|1, 2|1}};
-
   if (b) {
     if (as) {
       rational h = 1|1;
@@ -21,8 +19,22 @@ function rational asd(rational as) {
 
 }
 
+function matrix mat() {
+  matrix m = {{1|1, 4|1}, {2|1, 2|1}};
+
+  return m;
+}
+
 function void main() {
-  a = 1|1;
+  a = 1|2;
+
+  print_rational(a);
 
   matrix m = asd(a);
+
+  print_matrix(a);
+
+  print_matrix(m);
+
+  print_matrix(mat());
 }

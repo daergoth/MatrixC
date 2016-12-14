@@ -3,6 +3,7 @@ package com.fordprog.matrix.interpreter.scope;
 import org.antlr.v4.runtime.ParserRuleContext;
 
 import java.util.IdentityHashMap;
+import java.util.List;
 import java.util.Map;
 
 public class SymbolTable {
@@ -11,7 +12,7 @@ public class SymbolTable {
 
   private Scope currentScope;
 
-  public SymbolTable(ParserRuleContext rootContext) {
+  public SymbolTable(ParserRuleContext rootContext, List<Symbol> builtinSymbols) {
     Scope rootScope = new Scope(null, rootContext);
 
     scopeMap = new IdentityHashMap<>();
@@ -19,6 +20,8 @@ public class SymbolTable {
     scopeMap.put(rootContext, rootScope);
 
     currentScope = rootScope;
+
+    builtinSymbols.forEach(this::addSymbol);
   }
 
   public void newScope(ParserRuleContext context) {

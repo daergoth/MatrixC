@@ -45,4 +45,24 @@ public class Matrix {
   public double[][] getValue() {
     return valueMatrix.getData();
   }
+
+  @Override
+  public String toString() {
+    StringBuilder stringBuilder = new StringBuilder();
+
+    stringBuilder.append("{\n");
+    for (double r[] : valueMatrix.getData()) {
+      stringBuilder.append("  {");
+
+      stringBuilder.append(new Rational(r[0]));
+      for (int i = 1; i < r.length; ++i) {
+        stringBuilder.append(", ");
+        stringBuilder.append(new Rational(r[i]));
+      }
+      stringBuilder.append("}\n");
+    }
+    stringBuilder.append("}");
+
+    return stringBuilder.toString();
+  }
 }

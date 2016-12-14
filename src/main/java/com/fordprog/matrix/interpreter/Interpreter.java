@@ -7,11 +7,16 @@ import com.fordprog.matrix.MatrixLexer;
 import com.fordprog.matrix.MatrixParser;
 import com.fordprog.matrix.interpreter.error.SemanticError;
 import com.fordprog.matrix.interpreter.execution.CodeExecutor;
+import com.fordprog.matrix.interpreter.execution.stdlib.BuiltinDeclarationSource;
+import com.fordprog.matrix.interpreter.execution.stdlib.InputOutputDeclarationSource;
+import com.fordprog.matrix.interpreter.scope.Symbol;
 import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class Interpreter {
 
@@ -26,8 +31,7 @@ public class Interpreter {
 
     matrixParser = new MatrixParser(new CommonTokenStream(matrixLexer));
 
-    semanticListener = new SemanticListener();
-
+    semanticListener = new SemanticListener(createBuiltinSymbolDeclarations());
   }
 
   public void interpret() {
@@ -42,12 +46,21 @@ public class Interpreter {
       System.out.println("------------------- ERRORS ---------------------");
       errorList.forEach(System.out::println);
     } else {
-      System.out.println("Success!");
-
       CodeExecutor codeExecutor = new CodeExecutor(semanticListener.getSymbolTable(), parseTree);
 
       codeExecutor.execute();
     }
 
+  }
+
+  private List<Symbol> createBuiltinSymbolDeclarations() {
+    List<BuiltinDeclarationSource> sources = Arrays.asList(
+        new InputOutputDeclarationSource()
+    );
+
+    return sources.stream()
+        .map(BuiltinDeclarationSource::getDeclarations)
+        .flatMap(List::stream)
+        .collect(Collectors.toList());
   }
 }
