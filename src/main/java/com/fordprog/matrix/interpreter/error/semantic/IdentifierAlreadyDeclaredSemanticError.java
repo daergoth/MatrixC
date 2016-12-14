@@ -1,4 +1,4 @@
-package com.fordprog.matrix.interpreter.error;
+package com.fordprog.matrix.interpreter.error.semantic;
 
 
 import com.fordprog.matrix.interpreter.CodePoint;

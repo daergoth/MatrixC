@@ -3,7 +3,7 @@ package com.fordprog.matrix.interpreter.type;
 
 import com.fordprog.matrix.MatrixParser;
 import com.fordprog.matrix.interpreter.execution.FunctionVisitor;
-import com.fordprog.matrix.interpreter.scope.Symbol;
+import com.fordprog.matrix.interpreter.semantic.Symbol;
 
 import java.util.List;
 

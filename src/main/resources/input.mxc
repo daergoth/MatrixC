@@ -2,7 +2,7 @@ rational a = 1|1;
 
 function rational asd(rational as) {
 
-  rational b = 3|1;
+  rational b = 0|1;
 
   if (b) {
     if (as) {
@@ -37,4 +37,9 @@ function void main() {
   print_matrix(m);
 
   print_matrix(mat());
+
+  matrix matr = read_matrix();
+
+  print_matrix(matr);
+
 }

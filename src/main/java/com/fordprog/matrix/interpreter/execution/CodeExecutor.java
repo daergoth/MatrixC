@@ -23,7 +23,6 @@ import static com.fordprog.matrix.MatrixParser.IfStatementContext;
 import static com.fordprog.matrix.MatrixParser.LogicExprContext;
 import static com.fordprog.matrix.MatrixParser.MatrixContext;
 import static com.fordprog.matrix.MatrixParser.MatrixTermContext;
-import static com.fordprog.matrix.MatrixParser.Matrix_elementContext;
 import static com.fordprog.matrix.MatrixParser.ParenLogicExprContext;
 import static com.fordprog.matrix.MatrixParser.ParenthesisExpressionContext;
 import static com.fordprog.matrix.MatrixParser.ProgramContext;
@@ -41,9 +40,9 @@ import static com.fordprog.matrix.MatrixParser.VariableDeclarationContext;
 import static com.fordprog.matrix.MatrixParser.WhileStatementContext;
 
 import com.fordprog.matrix.interpreter.CodePoint;
-import com.fordprog.matrix.interpreter.scope.Scope;
-import com.fordprog.matrix.interpreter.scope.Symbol;
-import com.fordprog.matrix.interpreter.scope.SymbolTable;
+import com.fordprog.matrix.interpreter.semantic.Scope;
+import com.fordprog.matrix.interpreter.semantic.Symbol;
+import com.fordprog.matrix.interpreter.semantic.SymbolTable;
 import com.fordprog.matrix.interpreter.type.BuiltinFunction;
 import com.fordprog.matrix.interpreter.type.Function;
 import com.fordprog.matrix.interpreter.type.Matrix;
@@ -180,12 +179,8 @@ public class CodeExecutor implements FunctionVisitor {
   }
 
   private void executeRational(RationalContext rationalContext, Symbol targetSymbol) {
-    int numerator = Integer.parseInt(rationalContext.INTEGER(0).getText());
-    int denominator = Integer.parseInt(rationalContext.INTEGER(1).getText());
 
-    Rational rational = new Rational(numerator, denominator);
-
-    targetSymbol.setValue(rational, Type.RATIONAL);
+    targetSymbol.setValue(Rational.fromRationalContext(rationalContext), Type.RATIONAL);
   }
 
   private void executeMatrixTerm(MatrixTermContext termContext, Symbol targetSymbol) {
@@ -193,33 +188,9 @@ public class CodeExecutor implements FunctionVisitor {
   }
 
   private void executeMatrixContext(MatrixContext matrixContext, Symbol targetSymbol) {
-    int rowNum = matrixContext.matrix_row().size();
-    int columnNum = matrixContext.matrix_row(0).matrix_element().size();
 
-    Rational rationalMatrix[][] = new Rational[rowNum][columnNum];
-
-    for (int r = 0; r < rowNum; ++r) {
-      for (int c = 0; c < columnNum; ++c) {
-        Symbol tempSymbol = Symbol.builder()
-            .identifier("temp")
-            .firstOccurrence(CodePoint.from(matrixContext))
-            .type(Type.RATIONAL)
-            .build();
-        Matrix_elementContext currentElement = matrixContext.matrix_row(r).matrix_element(c);
-
-        if (currentElement.id() != null) {
-          executeId(currentElement.id(), tempSymbol);
-        } else {
-          executeRational(currentElement.rational(), tempSymbol);
-        }
-
-        rationalMatrix[r][c] = (Rational) tempSymbol.getValue();
-
-      }
-    }
-
-    Matrix matrix = new Matrix(rationalMatrix);
-    targetSymbol.setValue(matrix, Type.MATRIX);
+    targetSymbol.setValue(Matrix.fromMatrixContext(matrixContext, symbolTable.getCurrentScope()),
+        Type.MATRIX);
   }
 
   private void executeFunctionCallExpression(FunctionCallContext expr,

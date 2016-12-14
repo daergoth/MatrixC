@@ -1,4 +1,4 @@
-package com.fordprog.matrix.interpreter.scope;
+package com.fordprog.matrix.interpreter.semantic;
 
 import com.fordprog.matrix.interpreter.CodePoint;
 import com.fordprog.matrix.interpreter.type.Matrix;

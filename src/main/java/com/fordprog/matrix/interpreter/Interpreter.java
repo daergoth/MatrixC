@@ -5,14 +5,15 @@ import static com.fordprog.matrix.MatrixParser.ProgramContext;
 
 import com.fordprog.matrix.MatrixLexer;
 import com.fordprog.matrix.MatrixParser;
-import com.fordprog.matrix.interpreter.error.SemanticError;
+import com.fordprog.matrix.interpreter.error.semantic.SemanticError;
 import com.fordprog.matrix.interpreter.execution.CodeExecutor;
 import com.fordprog.matrix.interpreter.execution.stdlib.BuiltinDeclarationSource;
 import com.fordprog.matrix.interpreter.execution.stdlib.InputOutputDeclarationSource;
-import com.fordprog.matrix.interpreter.scope.Symbol;
+import com.fordprog.matrix.interpreter.semantic.Symbol;
 import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
+import org.antlr.v4.tool.GrammarParserInterpreter;
 
 import java.util.Arrays;
 import java.util.List;
@@ -30,6 +31,7 @@ public class Interpreter {
     matrixLexer = new MatrixLexer(new ANTLRInputStream(code));
 
     matrixParser = new MatrixParser(new CommonTokenStream(matrixLexer));
+    matrixParser.setErrorHandler(new GrammarParserInterpreter.BailButConsumeErrorStrategy());
 
     semanticListener = new SemanticListener(createBuiltinSymbolDeclarations());
   }
@@ -42,13 +44,20 @@ public class Interpreter {
 
     List<SemanticError> errorList = semanticListener.getSemanticErrors();
 
-    if (!errorList.isEmpty()) {
-      System.out.println("------------------- ERRORS ---------------------");
-      errorList.forEach(System.out::println);
+    if (matrixParser.getNumberOfSyntaxErrors() > 0) {
+      System.err.println("Aborting...");
+    } else if (!errorList.isEmpty()) {
+      System.err.println("------------------- ERRORS ---------------------");
+      errorList.forEach(System.err::println);
     } else {
       CodeExecutor codeExecutor = new CodeExecutor(semanticListener.getSymbolTable(), parseTree);
 
-      codeExecutor.execute();
+      try {
+        codeExecutor.execute();
+      } catch (RuntimeException e) {
+        System.err.println("[" + e.getClass().getSimpleName() + "]: " + e.getMessage());
+        System.err.println("Aborting...");
+      }
     }
 
   }

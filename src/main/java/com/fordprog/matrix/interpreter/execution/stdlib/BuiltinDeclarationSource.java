@@ -1,7 +1,7 @@
 package com.fordprog.matrix.interpreter.execution.stdlib;
 
 import com.fordprog.matrix.interpreter.CodePoint;
-import com.fordprog.matrix.interpreter.scope.Symbol;
+import com.fordprog.matrix.interpreter.semantic.Symbol;
 import com.fordprog.matrix.interpreter.type.BuiltinFunction;
 import com.fordprog.matrix.interpreter.type.Type;
 

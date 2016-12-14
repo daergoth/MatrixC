@@ -1,4 +1,4 @@
-package com.fordprog.matrix.interpreter.scope;
+package com.fordprog.matrix.interpreter.semantic;
 
 
 import org.antlr.v4.runtime.ParserRuleContext;
@@ -7,6 +7,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class Scope {
+
+  public static final Scope NULL_SCOPE = new Scope(null, null);
 
   private final Scope parent;
 

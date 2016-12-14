@@ -1,4 +1,4 @@
-package com.fordprog.matrix.interpreter.scope;
+package com.fordprog.matrix.interpreter.semantic;
 
 import org.antlr.v4.runtime.ParserRuleContext;
 
@@ -30,7 +30,7 @@ public class SymbolTable {
 
   public void exitScope() {
     if (currentScope.getParent() == null) {
-      throw new IllegalStateException("The current scope has no parent scope!");
+      throw new IllegalStateException("The current semantic has no parent semantic!");
     }
 
     currentScope = currentScope.getParent();

@@ -28,23 +28,23 @@ import static com.fordprog.matrix.MatrixParser.VariableDeclarationContext;
 
 import com.fordprog.matrix.MatrixBaseListener;
 import com.fordprog.matrix.MatrixParser;
-import com.fordprog.matrix.interpreter.error.AssignmentToFunctionSemanticError;
-import com.fordprog.matrix.interpreter.error.AssignmentWithVoidFunctionSemanticError;
-import com.fordprog.matrix.interpreter.error.FunctionCallExpectedSemanticError;
-import com.fordprog.matrix.interpreter.error.IdentifierAlreadyDeclaredSemanticError;
-import com.fordprog.matrix.interpreter.error.IllformedMatrixSemanticError;
-import com.fordprog.matrix.interpreter.error.InvalidMainFunctionSignatureSemanticError;
-import com.fordprog.matrix.interpreter.error.MissingMainFunctionSemanticError;
-import com.fordprog.matrix.interpreter.error.MissingReturnInFunctionSemanticError;
-import com.fordprog.matrix.interpreter.error.OperationWithVoidFunctionSemanticError;
-import com.fordprog.matrix.interpreter.error.ReturnInVoidFunctionSemanticError;
-import com.fordprog.matrix.interpreter.error.SemanticError;
-import com.fordprog.matrix.interpreter.error.TypeMismatchSemanticError;
-import com.fordprog.matrix.interpreter.error.UndeclaredIdentifierSemanticError;
-import com.fordprog.matrix.interpreter.error.VoidParameterInFunctionCallSemanticError;
-import com.fordprog.matrix.interpreter.error.WrongNumberOfParametersSemanticError;
-import com.fordprog.matrix.interpreter.scope.Symbol;
-import com.fordprog.matrix.interpreter.scope.SymbolTable;
+import com.fordprog.matrix.interpreter.error.semantic.AssignmentToFunctionSemanticError;
+import com.fordprog.matrix.interpreter.error.semantic.AssignmentWithVoidFunctionSemanticError;
+import com.fordprog.matrix.interpreter.error.semantic.FunctionCallExpectedSemanticError;
+import com.fordprog.matrix.interpreter.error.semantic.IdentifierAlreadyDeclaredSemanticError;
+import com.fordprog.matrix.interpreter.error.semantic.IllformedMatrixSemanticError;
+import com.fordprog.matrix.interpreter.error.semantic.InvalidMainFunctionSignatureSemanticError;
+import com.fordprog.matrix.interpreter.error.semantic.MissingMainFunctionSemanticError;
+import com.fordprog.matrix.interpreter.error.semantic.MissingReturnInFunctionSemanticError;
+import com.fordprog.matrix.interpreter.error.semantic.OperationWithVoidFunctionSemanticError;
+import com.fordprog.matrix.interpreter.error.semantic.ReturnInVoidFunctionSemanticError;
+import com.fordprog.matrix.interpreter.error.semantic.SemanticError;
+import com.fordprog.matrix.interpreter.error.semantic.TypeMismatchSemanticError;
+import com.fordprog.matrix.interpreter.error.semantic.UndeclaredIdentifierSemanticError;
+import com.fordprog.matrix.interpreter.error.semantic.VoidParameterInFunctionCallSemanticError;
+import com.fordprog.matrix.interpreter.error.semantic.WrongNumberOfParametersSemanticError;
+import com.fordprog.matrix.interpreter.semantic.Symbol;
+import com.fordprog.matrix.interpreter.semantic.SymbolTable;
 import com.fordprog.matrix.interpreter.type.Function;
 import com.fordprog.matrix.interpreter.type.Type;
 import com.fordprog.matrix.interpreter.type.UserDefinedFunction;
@@ -322,8 +322,18 @@ public class SemanticListener extends MatrixBaseListener {
 
   @Override
   public void enterFunctionCallExpression(FunctionCallExpressionContext ctx) {
+    Symbol functionSymbol = symbolTable.getSymbol(ctx.functionCall().id().getText());
+
+    if (functionSymbol == null) {
+      semanticErrors
+          .add(new UndeclaredIdentifierSemanticError(CodePoint.from(ctx),
+              ctx.functionCall().id().getText()));
+
+      return;
+    }
+
     Function function =
-        (Function) (symbolTable.getSymbol(ctx.functionCall().id().getText()).getValue());
+        (Function) (functionSymbol.getValue());
 
     Type returnType = function.getReturnType();
 

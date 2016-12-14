@@ -1,7 +1,8 @@
 package com.fordprog.matrix.interpreter.type;
 
 
-import com.fordprog.matrix.interpreter.execution.CannotConvertException;
+import com.fordprog.matrix.MatrixParser;
+import com.fordprog.matrix.interpreter.error.runtime.CannotConvertRuntimeError;
 import org.apache.commons.math3.fraction.Fraction;
 
 public class Rational {
@@ -26,7 +27,14 @@ public class Rational {
       return new Rational(matrix.getValue()[0][0]);
     }
 
-    throw new CannotConvertException("Cannot convert Matrix to Rational");
+    throw new CannotConvertRuntimeError("Cannot convert Matrix to Rational");
+  }
+
+  public static Rational fromRationalContext(MatrixParser.RationalContext rationalContext) {
+    int numerator = Integer.parseInt(rationalContext.INTEGER(0).getText());
+    int denominator = Integer.parseInt(rationalContext.INTEGER(1).getText());
+
+    return new Rational(numerator, denominator);
   }
 
   public double getAsDouble() {
