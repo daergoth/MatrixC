@@ -40,6 +40,11 @@ import static com.fordprog.matrix.MatrixParser.VariableDeclarationContext;
 import static com.fordprog.matrix.MatrixParser.WhileStatementContext;
 
 import com.fordprog.matrix.interpreter.CodePoint;
+import com.fordprog.matrix.interpreter.error.runtime.CannotConvertRuntimeError;
+import com.fordprog.matrix.interpreter.error.runtime.InvalidOperationParameterRuntimeError;
+import com.fordprog.matrix.interpreter.execution.stdlib.LogicOperation;
+import com.fordprog.matrix.interpreter.execution.stdlib.MatrixOperation;
+import com.fordprog.matrix.interpreter.execution.stdlib.RationalOperation;
 import com.fordprog.matrix.interpreter.semantic.Scope;
 import com.fordprog.matrix.interpreter.semantic.Symbol;
 import com.fordprog.matrix.interpreter.semantic.SymbolTable;
@@ -50,6 +55,7 @@ import com.fordprog.matrix.interpreter.type.Rational;
 import com.fordprog.matrix.interpreter.type.Type;
 import com.fordprog.matrix.interpreter.type.UserDefinedFunction;
 
+import java.math.BigInteger;
 import java.util.Deque;
 import java.util.LinkedList;
 import java.util.List;
@@ -230,7 +236,109 @@ public class CodeExecutor implements FunctionVisitor {
 
   private void executeBinOperatorExpressionContext(BinOperatorExpressionContext expr,
                                                    Symbol targetSymbol) {
-    //TODO
+
+    RationalOperation rationalOperation = RationalOperation.getInstance();
+    MatrixOperation matrixOperation = MatrixOperation.getInstance();
+
+    Symbol leftSymbol = Symbol.builder()
+        .identifier("leftOperand")
+        .type(Type.MATRIX)
+        .firstOccurrence(CodePoint.from(expr))
+        .build();
+
+    Symbol rightSymbol = Symbol.builder()
+        .identifier("rightOperand")
+        .type(Type.MATRIX)
+        .firstOccurrence(CodePoint.from(expr))
+        .build();
+
+    executeExpression(expr.leftOperand, leftSymbol);
+    executeExpression(expr.rightOperand, rightSymbol);
+
+    switch (expr.bin_operator().getText()) {
+      case "+":
+        try {
+          Rational left = (Rational) leftSymbol.getValue(Type.RATIONAL);
+          Rational right = (Rational) rightSymbol.getValue(Type.RATIONAL);
+
+          targetSymbol.setValue(rationalOperation.add(left, right), Type.RATIONAL);
+        } catch (CannotConvertRuntimeError e) {
+          Matrix left = (Matrix) leftSymbol.getValue(Type.MATRIX);
+          Matrix right = (Matrix) rightSymbol.getValue(Type.MATRIX);
+
+          targetSymbol.setValue(matrixOperation.add(left, right), Type.MATRIX);
+        }
+        break;
+      case "-":
+        try {
+          Rational left = (Rational) leftSymbol.getValue(Type.RATIONAL);
+          Rational right = (Rational) rightSymbol.getValue(Type.RATIONAL);
+
+          targetSymbol.setValue(rationalOperation.subtract(left, right), Type.RATIONAL);
+        } catch (CannotConvertRuntimeError e) {
+          Matrix left = (Matrix) leftSymbol.getValue(Type.MATRIX);
+          Matrix right = (Matrix) rightSymbol.getValue(Type.MATRIX);
+
+          targetSymbol.setValue(matrixOperation.subtract(left, right), Type.MATRIX);
+        }
+        break;
+      case "/": {
+        Rational left = (Rational) leftSymbol.getValue(Type.RATIONAL);
+        Rational right = (Rational) rightSymbol.getValue(Type.RATIONAL);
+
+        targetSymbol.setValue(rationalOperation.divide(left, right), Type.RATIONAL);
+      }
+      break;
+      case "*": {
+        Rational left = null;
+        Rational right = null;
+
+        boolean isLeftRational = true;
+        boolean isRightRational = true;
+
+        try {
+          left = (Rational) leftSymbol.getValue(Type.RATIONAL);
+        } catch (CannotConvertRuntimeError e) {
+          isLeftRational = false;
+        }
+
+        try {
+          right = (Rational) rightSymbol.getValue(Type.RATIONAL);
+        } catch (CannotConvertRuntimeError e) {
+          isRightRational = false;
+        }
+
+        if (isLeftRational && isRightRational) {
+          targetSymbol.setValue(rationalOperation.multiply(left, right), Type.RATIONAL);
+        } else if (!isLeftRational && !isRightRational) {
+          throw new InvalidOperationParameterRuntimeError(
+              "'*' operator cannot be applied to matrices! Maybe you wanted '#' operator?");
+        } else {
+          if (isLeftRational) {
+            targetSymbol.setValue(matrixOperation.scalarMultiply(
+                (Matrix) rightSymbol.getValue(Type.MATRIX), left), Type.MATRIX);
+          } else {
+            targetSymbol.setValue(matrixOperation.scalarMultiply(
+                (Matrix) leftSymbol.getValue(Type.MATRIX), right), Type.MATRIX);
+          }
+        }
+      }
+      break;
+      case "^": {
+        Rational left = (Rational) leftSymbol.getValue(Type.RATIONAL);
+        Rational right = (Rational) rightSymbol.getValue(Type.RATIONAL);
+
+        targetSymbol.setValue(rationalOperation.power(left, right), Type.RATIONAL);
+      }
+      break;
+      case "#": {
+        Matrix left = (Matrix) leftSymbol.getValue(Type.MATRIX);
+        Matrix right = (Matrix) rightSymbol.getValue(Type.MATRIX);
+
+        targetSymbol.setValue(matrixOperation.multiply(left, right), Type.MATRIX);
+      }
+      break;
+    }
   }
 
   private void executeParenthesisExpression(ParenthesisExpressionContext expr,
@@ -402,13 +510,65 @@ public class CodeExecutor implements FunctionVisitor {
 
   private void executeRelationLogicExpression(
       RelationLogicExpressionContext relationLogicExpressionContext, Symbol logicSymbol) {
-    //TODO
+
+    LogicOperation logicOperation = LogicOperation.getInstance();
+
+    Symbol leftSymbol = Symbol.builder()
+        .identifier("leftLogic")
+        .type(Type.RATIONAL)
+        .firstOccurrence(CodePoint.from(relationLogicExpressionContext))
+        .build();
+
+    Symbol rightSymbol = Symbol.builder()
+        .identifier("rightLogic")
+        .type(Type.RATIONAL)
+        .firstOccurrence(CodePoint.from(relationLogicExpressionContext))
+        .build();
+
+    executeExpression(relationLogicExpressionContext.leftExpr, leftSymbol);
+    executeExpression(relationLogicExpressionContext.rightExpr, rightSymbol);
+
+    Rational left = (Rational) leftSymbol.getValue(Type.RATIONAL);
+    Rational right = (Rational) rightSymbol.getValue(Type.RATIONAL);
+
+    Rational result = null;
+
+    switch (relationLogicExpressionContext.relation().getText()) {
+      case "<": {
+        result = logicOperation.lessThan(left, right);
+      }
+      break;
+      case ">": {
+        result = logicOperation.greaterThan(left, right);
+      }
+      break;
+      case "<=": {
+        result = logicOperation.lessThanOrEqual(left, right);
+      }
+      break;
+      case ">=": {
+        result = logicOperation.greaterThanOrEqual(left, right);
+      }
+      break;
+      case "==": {
+        result = logicOperation.equalTo(left, right);
+      }
+      break;
+      case "!=": {
+        result = logicOperation.equalTo(left, right).equals(Rational.TRUE) ?
+            Rational.FALSE : Rational.TRUE;
+      }
+      break;
+    }
+
+    logicSymbol.setValue(result, Type.RATIONAL);
   }
 
   private boolean isZeroRationalSymbol(Symbol symbol) {
     Rational logicRational = (Rational) symbol.getValue(Type.RATIONAL);
 
-    return logicRational.getDenominator() == 0 || logicRational.getNumerator() == 0;
+    return logicRational.getDenominator().compareTo(BigInteger.ZERO) == 0
+        || logicRational.getNumerator().compareTo(BigInteger.ZERO) == 0;
   }
 
 

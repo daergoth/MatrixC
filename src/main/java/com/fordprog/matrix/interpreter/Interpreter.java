@@ -5,6 +5,7 @@ import static com.fordprog.matrix.MatrixParser.ProgramContext;
 
 import com.fordprog.matrix.MatrixLexer;
 import com.fordprog.matrix.MatrixParser;
+import com.fordprog.matrix.interpreter.error.runtime.RuntimeError;
 import com.fordprog.matrix.interpreter.error.semantic.SemanticError;
 import com.fordprog.matrix.interpreter.execution.CodeExecutor;
 import com.fordprog.matrix.interpreter.execution.stdlib.BuiltinDeclarationSource;
@@ -54,7 +55,7 @@ public class Interpreter {
 
       try {
         codeExecutor.execute();
-      } catch (RuntimeException e) {
+      } catch (RuntimeError e) {
         System.err.println("[" + e.getClass().getSimpleName() + "]: " + e.getMessage());
         System.err.println("Aborting...");
       }

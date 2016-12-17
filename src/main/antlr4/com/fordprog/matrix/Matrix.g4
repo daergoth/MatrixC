@@ -125,19 +125,11 @@ matrix_element
     ;
 
 relation
-    : compareSigns
-    | equalSigns
-    ;
-
-compareSigns
     : '<'
     | '>'
     | '<='
     | '>='
-    ;
-
-equalSigns
-    : '=='
+    | '=='
     | '!='
     ;
 

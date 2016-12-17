@@ -3,22 +3,27 @@ package com.fordprog.matrix.interpreter.type;
 
 import com.fordprog.matrix.MatrixParser;
 import com.fordprog.matrix.interpreter.error.runtime.CannotConvertRuntimeError;
-import org.apache.commons.math3.fraction.Fraction;
+
+import java.math.BigInteger;
 
 public class Rational {
 
-  private final Fraction value;
+  public static final Rational TRUE = new Rational(BigInteger.ONE, BigInteger.ONE);
 
-  public Rational(double value) {
-    this.value = new Fraction(value);
-  }
+  public static final Rational FALSE = new Rational(BigInteger.ZERO, BigInteger.ONE);
 
-  public Rational(int numerator, int denominator) {
-    this.value = new Fraction(numerator, denominator);
+  private final BigInteger numerator;
+
+  private final BigInteger denominator;
+
+  public Rational(BigInteger numerator, BigInteger denominator) {
+    this.numerator = numerator;
+    this.denominator = denominator;
   }
 
   public Rational(Rational rational) {
-    this.value = new Fraction(rational.getNumerator(), rational.getDenominator());
+    this.numerator = rational.getNumerator().add(BigInteger.ZERO);
+    this.denominator = rational.getDenominator().add(BigInteger.ZERO);
   }
 
   public static Rational fromMatrix(Matrix matrix) {
@@ -31,27 +36,23 @@ public class Rational {
   }
 
   public static Rational fromRationalContext(MatrixParser.RationalContext rationalContext) {
-    int numerator = Integer.parseInt(rationalContext.INTEGER(0).getText());
-    int denominator = Integer.parseInt(rationalContext.INTEGER(1).getText());
+    BigInteger numerator = new BigInteger(rationalContext.INTEGER(0).getText());
+    BigInteger denominator = new BigInteger(rationalContext.INTEGER(1).getText());
 
     return new Rational(numerator, denominator);
   }
 
-  public double getAsDouble() {
-    return value.doubleValue();
+  public BigInteger getNumerator() {
+    return numerator;
   }
 
-  public int getNumerator() {
-    return value.getNumerator();
-  }
-
-  public int getDenominator() {
-    return value.getDenominator();
+  public BigInteger getDenominator() {
+    return denominator;
   }
 
   @Override
   public String toString() {
-    return String.valueOf(value.getNumerator()) + "|" +
-        String.valueOf(value.getDenominator());
+    return String.valueOf(numerator) + "|" +
+        String.valueOf(denominator);
   }
 }

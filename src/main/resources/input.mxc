@@ -28,18 +28,10 @@ function matrix mat() {
 function void main() {
   a = 1|2;
 
-  print_rational(a);
+  rational addition = a / a;
 
-  matrix m = asd(a);
-
-  print_matrix(a);
-
-  print_matrix(m);
+  print_rational(addition);
 
   print_matrix(mat());
-
-  matrix matr = read_matrix();
-
-  print_matrix(matr);
-
+  print_matrix(mat() a);
 }
