@@ -10,6 +10,7 @@ import com.fordprog.matrix.interpreter.error.semantic.SemanticError;
 import com.fordprog.matrix.interpreter.execution.CodeExecutor;
 import com.fordprog.matrix.interpreter.execution.stdlib.BuiltinDeclarationSource;
 import com.fordprog.matrix.interpreter.execution.stdlib.InputOutputDeclarationSource;
+import com.fordprog.matrix.interpreter.execution.stdlib.SpecialMatrixOperationDeclarationSource;
 import com.fordprog.matrix.interpreter.semantic.Symbol;
 import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.CommonTokenStream;
@@ -65,7 +66,8 @@ public class Interpreter {
 
   private List<Symbol> createBuiltinSymbolDeclarations() {
     List<BuiltinDeclarationSource> sources = Arrays.asList(
-        new InputOutputDeclarationSource()
+        new InputOutputDeclarationSource(),
+        new SpecialMatrixOperationDeclarationSource()
     );
 
     return sources.stream()

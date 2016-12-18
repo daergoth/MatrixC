@@ -6,6 +6,7 @@ import com.fordprog.matrix.interpreter.type.Matrix;
 import com.fordprog.matrix.interpreter.type.Type;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -40,11 +41,28 @@ public class SpecialMatrixOperationDeclarationSource extends BuiltinDeclarationS
             this::transposeMatrix
         );
 
+    BuiltinFunction gaussBuiltinFunction =
+        new BuiltinFunction(Type.MATRIX,
+            Arrays.asList(createBuiltinParameterSymbol("m", Type.MATRIX),
+                createBuiltinParameterSymbol("v", Type.MATRIX)),
+            this::gaussElimination
+        );
+
+    BuiltinFunction solveBuiltinFunction =
+        new BuiltinFunction(Type.MATRIX,
+            Arrays.asList(createBuiltinParameterSymbol("m", Type.MATRIX),
+                createBuiltinParameterSymbol("v", Type.MATRIX)),
+            this::solveLinearSystem);
+
     declaredSymbols.add(createBuiltinFunctionSymbol("inverse", inverseBuiltinFunction));
 
     declaredSymbols.add(createBuiltinFunctionSymbol("determinant", determinantBuiltinFunction));
 
     declaredSymbols.add(createBuiltinFunctionSymbol("transpose", transposeBuiltinFunction));
+
+    declaredSymbols.add(createBuiltinFunctionSymbol("gauss", gaussBuiltinFunction));
+
+    declaredSymbols.add(createBuiltinFunctionSymbol("solve", solveBuiltinFunction));
 
     return declaredSymbols;
   }
@@ -61,6 +79,15 @@ public class SpecialMatrixOperationDeclarationSource extends BuiltinDeclarationS
     return matrixOperation.determinant((Matrix) parameters.get(0));
   }
 
-  //TODO: gauss, equationsystem, eigenvalue, eigenvector
+  private Object gaussElimination(List<Object> parameters) {
+    return matrixOperation.gaussElimination((Matrix) parameters.get(0), (Matrix) parameters.get(1));
+  }
+
+  private Object solveLinearSystem(List<Object> parameters) {
+    return matrixOperation
+        .solveLinearSystem((Matrix) parameters.get(0), (Matrix) parameters.get(1));
+  }
+
+  //TODO: eigenvalue, eigenvector
 
 }

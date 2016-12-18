@@ -36,13 +36,27 @@ public class RationalOperation {
   }
 
   public Rational multiply(Rational a, Rational b) {
-    return new Rational(a.getNumerator().multiply(b.getNumerator()),
-        a.getDenominator().multiply(b.getDenominator()));
+    BigInteger num = a.getNumerator().multiply(b.getNumerator());
+    BigInteger den = a.getDenominator().multiply(b.getDenominator());
+
+    if (den.signum() == -1) {
+      num = num.multiply(BigInteger.valueOf(-1L));
+      den = den.multiply(BigInteger.valueOf(-1L));
+    }
+
+    return new Rational(num, den);
   }
 
   public Rational divide(Rational a, Rational b) {
-    return new Rational(a.getNumerator().multiply(b.getDenominator()),
-        a.getDenominator().multiply(b.getNumerator()));
+    BigInteger num = a.getNumerator().multiply(b.getDenominator());
+    BigInteger den = a.getDenominator().multiply(b.getNumerator());
+
+    if (den.signum() == -1) {
+      num = num.multiply(BigInteger.valueOf(-1L));
+      den = den.multiply(BigInteger.valueOf(-1L));
+    }
+
+    return new Rational(num, den);
   }
 
   //Possible precision loss
@@ -61,6 +75,10 @@ public class RationalOperation {
 
     return new Rational(BigInteger.valueOf(Math.round(resultNumerator)),
         BigInteger.valueOf(Math.round(resultDenominator)));
+  }
+
+  public Rational abs(Rational a) {
+    return new Rational(a.getNumerator().abs(), a.getDenominator().abs());
   }
 
   private BigInteger leastCommonDivisor(BigInteger a, BigInteger b) {

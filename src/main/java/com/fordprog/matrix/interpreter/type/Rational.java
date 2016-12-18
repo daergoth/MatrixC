@@ -17,6 +17,11 @@ public class Rational {
   private final BigInteger denominator;
 
   public Rational(BigInteger numerator, BigInteger denominator) {
+    if (numerator.signum() == -1 && denominator.signum() == -1) {
+      numerator = numerator.multiply(BigInteger.valueOf(-1L));
+      denominator = denominator.multiply(BigInteger.valueOf(-1L));
+    }
+
     this.numerator = numerator;
     this.denominator = denominator;
   }

@@ -11,10 +11,18 @@ public class MatrixOperation {
 
   private static MatrixOperation instance = new MatrixOperation();
 
+  private final Rational epsilon;
+
   private final RationalOperation rationalOperation;
+
+  private final LogicOperation logicOperation;
 
   private MatrixOperation() {
     rationalOperation = RationalOperation.getInstance();
+    logicOperation = LogicOperation.getInstance();
+
+    // 1e-10
+    epsilon = new Rational(BigInteger.ONE, BigInteger.valueOf(10000000000L));
   }
 
   public static MatrixOperation getInstance() {
@@ -113,7 +121,154 @@ public class MatrixOperation {
     return new Matrix(value);
   }
 
-  //TODO gauss, eigens, equationsystem
+  public Matrix gaussElimination(Matrix a, Matrix v) {
+
+    if (v.getRowNum() != 1) {
+      throw new InvalidOperationParameterRuntimeError(
+          "Second parameter of Gauss elimination must be a row vector!");
+    }
+
+    if (a.getRowNum() != v.getColumnNum()) {
+      throw new InvalidOperationParameterRuntimeError(
+          "Gauss elimination parameters' row number don't match!");
+    }
+
+    Rational aValue[][] = new Rational[a.getRowNum()][a.getColumnNum()];
+    for (int i = 0; i < a.getRowNum(); i++) {
+      aValue[i] = a.getValue()[i].clone();
+    }
+
+    Rational bValue[] = v.getValue()[0].clone();
+
+    int N = v.getColumnNum();
+
+    for (int p = 0; p < N; p++) {
+
+      // find pivot row and swap
+      int max = p;
+      for (int i = p + 1; i < N; i++) {
+        if (logicOperation
+            .greaterThan(rationalOperation.abs(aValue[i][p]), rationalOperation.abs(aValue[max][p]))
+            .equals(Rational.TRUE)) {
+          max = i;
+        }
+      }
+
+      Rational[] temp = aValue[p];
+      aValue[p] = aValue[max];
+      aValue[max] = temp;
+
+      Rational t = bValue[p];
+      bValue[p] = bValue[max];
+      bValue[max] = t;
+
+      // singular or nearly singular
+      if (logicOperation.lessThanOrEqual(rationalOperation.abs(aValue[p][p]), epsilon)
+          .equals(Rational.TRUE)) {
+        throw new InvalidOperationParameterRuntimeError("Matrix is singular or nearly singular");
+      }
+
+      // pivot within A and b
+      for (int i = p + 1; i < N; i++) {
+        Rational alpha = rationalOperation.divide(aValue[i][p], aValue[p][p]);
+        bValue[i] =
+            rationalOperation.subtract(bValue[i], rationalOperation.multiply(alpha, bValue[p]));
+        for (int j = p; j < N; j++) {
+          aValue[i][j] =
+              rationalOperation
+                  .subtract(aValue[i][j], rationalOperation.multiply(alpha, aValue[p][j]));
+        }
+      }
+    }
+
+    Rational result[][] = new Rational[a.getRowNum()][a.getColumnNum() + 1];
+
+    for (int r = 0; r < a.getRowNum(); ++r) {
+      for (int c = 0; c < a.getColumnNum(); ++c) {
+        result[r][c] = aValue[r][c];
+      }
+    }
+
+    for (int r = 0; r < bValue.length; ++r) {
+      result[r][a.getColumnNum()] = bValue[r];
+    }
+
+    return new Matrix(result);
+  }
+
+  public Matrix solveLinearSystem(Matrix a, Matrix v) {
+    if (v.getRowNum() != 1) {
+      throw new InvalidOperationParameterRuntimeError(
+          "Second parameter of linear equation solving must be a row vector!");
+    }
+
+    if (a.getRowNum() != v.getColumnNum()) {
+      throw new InvalidOperationParameterRuntimeError(
+          "Linear equation system solving parameters' row number don't match!");
+    }
+
+    Rational aValue[][] = new Rational[a.getRowNum()][a.getColumnNum()];
+    for (int i = 0; i < a.getRowNum(); i++) {
+      aValue[i] = a.getValue()[i].clone();
+    }
+
+    Rational bValue[] = v.getValue()[0].clone();
+
+    int N = v.getColumnNum();
+
+    for (int p = 0; p < N; p++) {
+
+      // find pivot row and swap
+      int max = p;
+      for (int i = p + 1; i < N; i++) {
+        if (logicOperation
+            .greaterThan(rationalOperation.abs(aValue[i][p]), rationalOperation.abs(aValue[max][p]))
+            .equals(Rational.TRUE)) {
+          max = i;
+        }
+      }
+
+      Rational[] temp = aValue[p];
+      aValue[p] = aValue[max];
+      aValue[max] = temp;
+
+      Rational t = bValue[p];
+      bValue[p] = bValue[max];
+      bValue[max] = t;
+
+      // singular or nearly singular
+      if (logicOperation.lessThanOrEqual(rationalOperation.abs(aValue[p][p]), epsilon)
+          .equals(Rational.TRUE)) {
+        throw new InvalidOperationParameterRuntimeError("Matrix is singular or nearly singular");
+      }
+
+      // pivot within A and b
+      for (int i = p + 1; i < N; i++) {
+        Rational alpha = rationalOperation.divide(aValue[i][p], aValue[p][p]);
+        bValue[i] =
+            rationalOperation.subtract(bValue[i], rationalOperation.multiply(alpha, bValue[p]));
+        for (int j = p; j < N; j++) {
+          aValue[i][j] =
+              rationalOperation
+                  .subtract(aValue[i][j], rationalOperation.multiply(alpha, aValue[p][j]));
+        }
+      }
+    }
+
+    // back substitution
+    Rational[][] x = new Rational[1][N];
+    for (int i = N - 1; i >= 0; i--) {
+      Rational sum = new Rational(BigInteger.ZERO, BigInteger.ONE);
+      for (int j = i + 1; j < N; j++) {
+        sum = rationalOperation.add(sum, rationalOperation.multiply(aValue[i][j], x[0][j]));
+      }
+      x[0][i] = rationalOperation.divide(rationalOperation.subtract(bValue[i], sum), aValue[i][i]);
+    }
+
+    return new Matrix(x);
+  }
+
+  //TODO eigens
 
   private boolean isMatchingMatrices(Matrix a, Matrix b) {
     return a.getRowNum() == b.getRowNum() && a.getColumnNum() == b.getColumnNum();
