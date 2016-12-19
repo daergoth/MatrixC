@@ -67,7 +67,7 @@ public class Symbol {
       }
     } else if (type == Type.MATRIX) {
       this.value = Matrix.fromRational((Rational) value);
-    } else {
+    } else if (type == Type.RATIONAL) {
       this.value = Rational.fromMatrix((Matrix) value);
     }
 

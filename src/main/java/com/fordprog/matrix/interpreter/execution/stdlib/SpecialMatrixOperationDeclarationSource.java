@@ -54,6 +54,11 @@ public class SpecialMatrixOperationDeclarationSource extends BuiltinDeclarationS
                 createBuiltinParameterSymbol("v", Type.MATRIX)),
             this::solveLinearSystem);
 
+    BuiltinFunction eigenValueBuiltinFunction =
+        new BuiltinFunction(Type.MATRIX,
+            Collections.singletonList(createBuiltinParameterSymbol("m", Type.MATRIX)),
+            this::eigenValue);
+
     declaredSymbols.add(createBuiltinFunctionSymbol("inverse", inverseBuiltinFunction));
 
     declaredSymbols.add(createBuiltinFunctionSymbol("determinant", determinantBuiltinFunction));
@@ -63,6 +68,8 @@ public class SpecialMatrixOperationDeclarationSource extends BuiltinDeclarationS
     declaredSymbols.add(createBuiltinFunctionSymbol("gauss", gaussBuiltinFunction));
 
     declaredSymbols.add(createBuiltinFunctionSymbol("solve", solveBuiltinFunction));
+
+    declaredSymbols.add(createBuiltinFunctionSymbol("eigen_value", eigenValueBuiltinFunction));
 
     return declaredSymbols;
   }
@@ -88,6 +95,10 @@ public class SpecialMatrixOperationDeclarationSource extends BuiltinDeclarationS
         .solveLinearSystem((Matrix) parameters.get(0), (Matrix) parameters.get(1));
   }
 
-  //TODO: eigenvalue, eigenvector
+  private Object eigenValue(List<Object> parameters) {
+    return matrixOperation.eigenValues((Matrix) parameters.get(0));
+  }
+
+  //TODO: eigenvector
 
 }

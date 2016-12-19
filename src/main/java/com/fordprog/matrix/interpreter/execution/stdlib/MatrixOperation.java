@@ -1,6 +1,8 @@
 package com.fordprog.matrix.interpreter.execution.stdlib;
 
 
+import static java.lang.Math.sqrt;
+
 import com.fordprog.matrix.interpreter.error.runtime.InvalidOperationParameterRuntimeError;
 import com.fordprog.matrix.interpreter.type.Matrix;
 import com.fordprog.matrix.interpreter.type.Rational;
@@ -268,9 +270,78 @@ public class MatrixOperation {
     return new Matrix(x);
   }
 
-  //TODO eigens
+  public Matrix eigenValues(Matrix m) {
+
+    if (is2By2Matrix(m)) {
+      Rational eValues[][] = new Rational[1][2];
+
+      Rational mValue[][] = new Rational[m.getRowNum()][m.getColumnNum()];
+      for (int i = 0; i < m.getRowNum(); i++) {
+        mValue[i] = m.getValue()[i].clone();
+      }
+
+      Rational a = new Rational(BigInteger.ONE, BigInteger.ONE);
+
+      Rational b = rationalOperation.subtract(
+          rationalOperation
+              .multiply(new Rational(BigInteger.valueOf(-1L), BigInteger.ONE), mValue[0][0]),
+          mValue[1][1]);
+
+      Rational c = rationalOperation.subtract(
+          rationalOperation.multiply(mValue[0][0], mValue[1][1]),
+          rationalOperation.multiply(mValue[0][1], mValue[1][0])
+      );
+
+      Rational temp =
+          rationalOperation.subtract(
+              rationalOperation.multiply(b, b),
+              rationalOperation.multiply(
+                  rationalOperation.multiply(
+                      new Rational(BigInteger.valueOf(4L), BigInteger.ONE),
+                      a
+                  ),
+                  c
+              )
+          );
+
+      Rational root = new Rational(sqrt(temp.getValue()));
+
+      Rational minusB =
+          new Rational(b.getNumerator().multiply(BigInteger.valueOf(-1L)), b.getDenominator());
+
+      eValues[0][0] =
+          rationalOperation.divide(
+              rationalOperation.add(minusB, root),
+              rationalOperation.multiply(
+                  new Rational(BigInteger.valueOf(2L), BigInteger.ONE),
+                  a
+              )
+          );
+
+      eValues[0][1] =
+          rationalOperation.divide(
+              rationalOperation.subtract(minusB, root),
+              rationalOperation.multiply(
+                  new Rational(BigInteger.valueOf(2L), BigInteger.ONE),
+                  a
+              )
+          );
+
+      return new Matrix(eValues);
+    } else {
+      //TODO math3
+      return null;
+
+    }
+  }
+
+  //TODO eigen vector
 
   private boolean isMatchingMatrices(Matrix a, Matrix b) {
     return a.getRowNum() == b.getRowNum() && a.getColumnNum() == b.getColumnNum();
+  }
+
+  private boolean is2By2Matrix(Matrix a) {
+    return a.getRowNum() == 2 && a.getColumnNum() == 2;
   }
 }

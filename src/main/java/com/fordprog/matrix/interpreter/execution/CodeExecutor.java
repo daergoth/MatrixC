@@ -386,6 +386,8 @@ public class CodeExecutor implements FunctionVisitor {
       }
     }
 
+    symbolTable.exitScope();
+
     return false;
   }
 
@@ -421,6 +423,8 @@ public class CodeExecutor implements FunctionVisitor {
   }
 
   private boolean executeControllBlock(ControllBlockContext controllBlockStatementContext) {
+    symbolTable.newScope(controllBlockStatementContext);
+
     if (controllBlockStatementContext instanceof IfStatementContext) {
       executeIfStatement((IfStatementContext) controllBlockStatementContext);
 

@@ -393,8 +393,15 @@ public class SemanticListener extends MatrixBaseListener {
   public void enterIdTerm(IdTermContext ctx) {
     String identifier = ctx.id().getText();
 
+    Symbol idSymbol = symbolTable.getSymbol(identifier);
+
+    if (idSymbol == null) {
+      semanticErrors.add(new UndeclaredIdentifierSemanticError(CodePoint.from(ctx), identifier));
+      return;
+    }
+
     // Check if the id is for a function, if it is error
-    if (symbolTable.getSymbol(identifier).getType() == Type.FUNCTION) {
+    if (idSymbol.getType() == Type.FUNCTION) {
       semanticErrors.add(new FunctionCallExpectedSemanticError(CodePoint.from(ctx), identifier));
     }
 

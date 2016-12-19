@@ -3,6 +3,7 @@ package com.fordprog.matrix.interpreter.type;
 
 import com.fordprog.matrix.MatrixParser;
 import com.fordprog.matrix.interpreter.error.runtime.CannotConvertRuntimeError;
+import org.apache.commons.math3.fraction.BigFraction;
 
 import java.math.BigInteger;
 
@@ -31,6 +32,13 @@ public class Rational {
     this.denominator = rational.getDenominator().add(BigInteger.ZERO);
   }
 
+  public Rational(double d) {
+    BigFraction fraction = new BigFraction(d);
+
+    this.numerator = fraction.getNumerator();
+    this.denominator = fraction.getDenominator();
+  }
+
   public static Rational fromMatrix(Matrix matrix) {
 
     if (matrix.canBeConverted()) {
@@ -53,6 +61,10 @@ public class Rational {
 
   public BigInteger getDenominator() {
     return denominator;
+  }
+
+  public double getValue() {
+    return numerator.doubleValue() / denominator.doubleValue();
   }
 
   @Override
