@@ -33,10 +33,16 @@ public class Rational {
   }
 
   public Rational(double d) {
-    BigFraction fraction = new BigFraction(d);
+    if (Math.abs(d) < 1e-15) {
+      this.numerator = BigInteger.ZERO;
+      this.denominator = BigInteger.ONE;
 
-    this.numerator = fraction.getNumerator();
-    this.denominator = fraction.getDenominator();
+    } else {
+      BigFraction fraction = new BigFraction(d);
+
+      this.numerator = fraction.getNumerator();
+      this.denominator = fraction.getDenominator();
+    }
   }
 
   public static Rational fromMatrix(Matrix matrix) {

@@ -1,10 +1,11 @@
 function void main() {
 
-  matrix m = {
-    {2|1, 2|1},
-    {2|1, 2|1}
-  };
+matrix a = {
+  {5|1, 5|1},
+  {1|1, 1|1}
+};
 
-  print_matrix(eigen_value(m));
+
+print_matrix(eigen_vector(a));
 
 }

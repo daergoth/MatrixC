@@ -90,7 +90,7 @@ public class SpecialMatrixOperationDeclarationSource extends BuiltinDeclarationS
   }
 
   private Object transposeMatrix(List<Object> parameters) {
-    return matrixOperation.determinant((Matrix) parameters.get(0));
+    return matrixOperation.transpose((Matrix) parameters.get(0));
   }
 
   private Object gaussElimination(List<Object> parameters) {

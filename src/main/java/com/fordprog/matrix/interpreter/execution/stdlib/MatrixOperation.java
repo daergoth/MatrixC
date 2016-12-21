@@ -1,6 +1,7 @@
 package com.fordprog.matrix.interpreter.execution.stdlib;
 
 
+import static java.lang.Math.abs;
 import static java.lang.Math.sqrt;
 
 import com.fordprog.matrix.interpreter.error.runtime.InvalidOperationParameterRuntimeError;
@@ -91,14 +92,163 @@ public class MatrixOperation {
     }
   }
 
-  //TODO
-  public Matrix inverse(Matrix a) {
-    return null;
+  public Matrix inverse(Matrix m) {
+    Rational mValue[][] = new Rational[m.getRowNum()][m.getColumnNum()];
+    for (int i = 0; i < m.getRowNum(); i++) {
+      mValue[i] = m.getValue()[i].clone();
+    }
+
+    int n = mValue.length;
+    Rational x[][] = new Rational[n][n];
+    Rational b[][] = new Rational[n][n];
+    int index[] = new int[n];
+
+    for (int i = 0; i < n; ++i) {
+      for (int j = 0; j < n; ++j) {
+        if (i == j) {
+          b[i][j] = new Rational(BigInteger.ONE, BigInteger.ONE);
+        } else {
+          b[i][j] = new Rational(BigInteger.ZERO, BigInteger.ONE);
+        }
+      }
+    }
+
+    // Transform the matrix into an upper triangle
+    mValue = gaussian(mValue, index);
+
+    // Update the matrix b[i][j] with the ratios stored
+    for (int i = 0; i < n - 1; ++i) {
+      for (int j = i + 1; j < n; ++j) {
+        for (int k = 0; k < n; ++k) {
+          b[index[j]][k] =
+              rationalOperation.subtract(b[index[j]][k],
+                  rationalOperation.multiply(mValue[index[j]][i], b[index[i]][k]));
+        }
+      }
+    }
+
+    // Perform backward substitutions
+    for (int i = 0; i < n; ++i) {
+      x[n - 1][i] = rationalOperation.divide(b[index[n - 1]][i], mValue[index[n - 1]][n - 1]);
+      for (int j = n - 2; j >= 0; --j) {
+        x[j][i] = b[index[j]][i];
+        for (int k = j + 1; k < n; ++k) {
+          x[j][i] =
+              rationalOperation
+                  .subtract(x[j][i], rationalOperation.multiply(mValue[index[j]][k], x[k][i]));
+        }
+        x[j][i] = rationalOperation.divide(x[j][i], mValue[index[j]][j]);
+      }
+    }
+    return new Matrix(x);
   }
 
-  //TODO
-  public Rational determinant(Matrix a) {
-    return null;
+  private Rational[][] gaussian(Rational[][] m, int[] index) {
+    int n = index.length;
+    Rational c[] = new Rational[n];
+
+    // Initialize the index
+    for (int i = 0; i < n; ++i) {
+      index[i] = i;
+    }
+
+    // Find the rescaling factors, one from each row
+    for (int i = 0; i < n; ++i) {
+      Rational c1 = new Rational(BigInteger.ZERO, BigInteger.ONE);
+      for (int j = 0; j < n; ++j) {
+        Rational c0 = new Rational(abs(m[i][j].getValue()));
+        if (logicOperation.greaterThan(c0, c1).isEqual(Rational.TRUE)) {
+          c1 = c0;
+        }
+      }
+      c[i] = c1;
+    }
+
+    // Search the pivoting element from each column
+    int k = 0;
+    for (int j = 0; j < n - 1; ++j) {
+      Rational pi1 = new Rational(BigInteger.ZERO, BigInteger.ONE);
+      for (int i = j; i < n; ++i) {
+        Rational pi0 = new Rational(abs(m[index[i]][j].getValue()));
+        pi0 = rationalOperation.divide(pi0, c[index[i]]);
+        if (logicOperation.greaterThan(pi0, pi1).isEqual(Rational.TRUE)) {
+          pi1 = pi0;
+          k = i;
+        }
+      }
+
+      // Interchange rows according to the pivoting order
+      int itmp = index[j];
+      index[j] = index[k];
+      index[k] = itmp;
+      for (int i = j + 1; i < n; ++i) {
+        Rational pj = rationalOperation.divide(m[index[i]][j], m[index[j]][j]);
+
+        // Record pivoting ratios below the diagonal
+        m[index[i]][j] = pj;
+
+        // Modify other elements accordingly
+        for (int l = j + 1; l < n; ++l) {
+          m[index[i]][l] =
+              rationalOperation
+                  .subtract(m[index[i]][l], rationalOperation.multiply(pj, m[index[j]][l]));
+        }
+      }
+    }
+
+    return m;
+  }
+
+  public Rational determinant(Matrix m) {
+    Rational mValue[][] = new Rational[m.getRowNum()][m.getColumnNum()];
+    for (int i = 0; i < m.getRowNum(); i++) {
+      mValue[i] = m.getValue()[i].clone();
+    }
+
+    return determinantArray(mValue);
+  }
+
+  private Rational determinantArray(Rational[][] mValue) {
+    Rational sum = new Rational(BigInteger.ZERO, BigInteger.ONE);
+    Rational s;
+
+    if (mValue.length == 1) {  //bottom case of recursion. size 1 matrix determinant is itself.
+      return mValue[0][0];
+    }
+    for (int i = 0; i < mValue.length; i++) { //finds determinant using row-by-row expansion
+      Rational[][] smaller =
+          new Rational[mValue.length - 1][mValue.length
+              - 1]; //creates smaller matrix- values not in same row, column
+
+      for (int a = 1; a < mValue.length; a++) {
+        for (int b = 0; b < mValue.length; b++) {
+          if (b < i) {
+            smaller[a - 1][b] = mValue[a][b];
+          } else if (b > i) {
+            smaller[a - 1][b - 1] = mValue[a][b];
+          }
+        }
+      }
+      if (i % 2 == 0) { //sign changes based on i
+        s = new Rational(BigInteger.ONE, BigInteger.ONE);
+      } else {
+        s = new Rational(BigInteger.valueOf(-1L), BigInteger.ONE);
+        ;
+      }
+
+      //recursive step: determinant of larger determined by smaller.
+      sum = rationalOperation.add(
+          sum,
+          rationalOperation.multiply(
+              rationalOperation.multiply(
+                  s,
+                  mValue[0][i]
+              ),
+              determinantArray(smaller)
+          )
+      );
+    }
+    return sum;
   }
 
   public Matrix transpose(Matrix a) {
@@ -402,13 +552,14 @@ public class MatrixOperation {
       EigenDecomposition eigenDecomposition = new EigenDecomposition(realMatrix);
 
       double[] eigenValues = eigenDecomposition.getRealEigenvalues();
-      Rational[][] eigenVectors = new Rational[eigenValues.length][2];
+      Rational[][] eigenVectors = new Rational[eigenValues.length][eigenValues.length];
 
       for (int i = 0; i < eigenValues.length; ++i) {
         double[] realVector = eigenDecomposition.getEigenvector(i).toArray();
 
         eigenVectors[i][0] = new Rational(realVector[0]);
         eigenVectors[i][1] = new Rational(realVector[1]);
+        eigenVectors[i][2] = new Rational(realVector[2]);
       }
 
       return new Matrix(eigenVectors);
