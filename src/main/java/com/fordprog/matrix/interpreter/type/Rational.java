@@ -67,6 +67,15 @@ public class Rational {
     return numerator.doubleValue() / denominator.doubleValue();
   }
 
+  public boolean isEqual(Rational other) {
+    if (numerator.compareTo(BigInteger.ZERO) == 0) {
+      return other.getNumerator().compareTo(BigInteger.ZERO) == 0;
+    }
+
+    return numerator.compareTo(other.getNumerator()) == 0
+        && denominator.compareTo(other.getDenominator()) == 0;
+  }
+
   @Override
   public String toString() {
     return String.valueOf(numerator) + "|" +

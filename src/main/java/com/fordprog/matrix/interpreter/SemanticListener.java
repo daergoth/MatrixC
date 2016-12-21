@@ -422,8 +422,8 @@ public class SemanticListener extends MatrixBaseListener {
   }
 
   /*
-             * Helper private methods
-             */
+   * Helper private methods
+   */
   private boolean checkIfIndentifierNotInScope(IdContext idContext) {
     String identifier = idContext.getText();
 

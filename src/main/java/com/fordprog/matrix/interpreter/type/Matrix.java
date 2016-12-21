@@ -94,6 +94,18 @@ public class Matrix {
     return valueMatrix;
   }
 
+  public double[][] getDoubleValue() {
+    double[][] value = new double[getRowNum()][getColumnNum()];
+
+    for (int r = 0; r < getRowNum(); ++r) {
+      for (int c = 0; c < getColumnNum(); ++c) {
+        value[r][c] = valueMatrix[r][c].getValue();
+      }
+    }
+
+    return value;
+  }
+
   public Rational getValueAtPosition(int row, int col) {
     return valueMatrix[row][col];
   }

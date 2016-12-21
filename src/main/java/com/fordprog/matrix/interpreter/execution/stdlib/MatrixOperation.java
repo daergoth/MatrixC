@@ -6,6 +6,8 @@ import static java.lang.Math.sqrt;
 import com.fordprog.matrix.interpreter.error.runtime.InvalidOperationParameterRuntimeError;
 import com.fordprog.matrix.interpreter.type.Matrix;
 import com.fordprog.matrix.interpreter.type.Rational;
+import org.apache.commons.math3.linear.Array2DRowRealMatrix;
+import org.apache.commons.math3.linear.EigenDecomposition;
 
 import java.math.BigInteger;
 
@@ -272,7 +274,9 @@ public class MatrixOperation {
 
   public Matrix eigenValues(Matrix m) {
 
-    if (is2By2Matrix(m)) {
+    if (m.getRowNum() == 1 && m.getColumnNum() == 1) {
+      return new Matrix(m);
+    } else if (m.getRowNum() == 2 && m.getColumnNum() == 2) {
       Rational eValues[][] = new Rational[1][2];
 
       Rational mValue[][] = new Rational[m.getRowNum()][m.getColumnNum()];
@@ -329,19 +333,91 @@ public class MatrixOperation {
 
       return new Matrix(eValues);
     } else {
-      //TODO math3
-      return null;
+      Array2DRowRealMatrix realMatrix = new Array2DRowRealMatrix(m.getDoubleValue());
+
+      double[] eigenValues = new EigenDecomposition(realMatrix).getRealEigenvalues();
+      Rational[][] eigenRationals = new Rational[1][eigenValues.length];
+
+      for (int i = 0; i < eigenValues.length; ++i) {
+        eigenRationals[0][i] = new Rational(eigenValues[i]);
+      }
+
+      return new Matrix(eigenRationals);
 
     }
   }
 
-  //TODO eigen vector
+  public Matrix eigenVectors(Matrix m) {
+    if (m.getRowNum() == 1 && m.getColumnNum() == 1) {
+      Rational[][] oneMatrix = {{new Rational(BigInteger.ONE, BigInteger.ONE)}};
+
+      return new Matrix(oneMatrix);
+    } else if (m.getRowNum() == 2 && m.getColumnNum() == 2) {
+
+      Rational mValue[][] = new Rational[m.getRowNum()][m.getColumnNum()];
+      for (int i = 0; i < m.getRowNum(); i++) {
+        mValue[i] = m.getValue()[i].clone();
+      }
+
+      Rational eValues[] = eigenValues(m).getValue()[0];
+      Rational eVectors[][] = new Rational[2][2];
+
+      Rational zeroRational = new Rational(BigInteger.ZERO, BigInteger.ONE);
+
+      if (mValue[0][1].isEqual(zeroRational) && mValue[1][0].isEqual(zeroRational)) {
+        eVectors[0][0] = new Rational(BigInteger.ONE, BigInteger.ONE);
+        eVectors[0][1] = new Rational(BigInteger.ZERO, BigInteger.ONE);
+
+        eVectors[1][0] = new Rational(BigInteger.ZERO, BigInteger.ONE);
+        eVectors[1][1] = new Rational(BigInteger.ONE, BigInteger.ONE);
+
+        return new Matrix(eVectors);
+      }
+
+      if (!mValue[1][0].isEqual(zeroRational)) {
+        eVectors[0][0] = rationalOperation.subtract(eValues[0], mValue[1][1]);
+        eVectors[0][1] = mValue[1][0];
+
+        eVectors[1][0] = rationalOperation.subtract(eValues[1], mValue[1][1]);
+        eVectors[1][1] = mValue[1][0];
+
+        return new Matrix(eVectors);
+      }
+
+      if (!mValue[0][1].isEqual(zeroRational)) {
+        eVectors[0][0] = mValue[0][1];
+        eVectors[0][1] = rationalOperation.subtract(eValues[0], mValue[0][0]);
+
+        eVectors[1][0] = mValue[0][1];
+        eVectors[1][1] = rationalOperation.subtract(eValues[1], mValue[0][0]);
+
+        return new Matrix(eVectors);
+      }
+
+      return null;
+
+    } else {
+      Array2DRowRealMatrix realMatrix = new Array2DRowRealMatrix(m.getDoubleValue());
+
+      EigenDecomposition eigenDecomposition = new EigenDecomposition(realMatrix);
+
+      double[] eigenValues = eigenDecomposition.getRealEigenvalues();
+      Rational[][] eigenVectors = new Rational[eigenValues.length][2];
+
+      for (int i = 0; i < eigenValues.length; ++i) {
+        double[] realVector = eigenDecomposition.getEigenvector(i).toArray();
+
+        eigenVectors[i][0] = new Rational(realVector[0]);
+        eigenVectors[i][1] = new Rational(realVector[1]);
+      }
+
+      return new Matrix(eigenVectors);
+    }
+  }
+
 
   private boolean isMatchingMatrices(Matrix a, Matrix b) {
     return a.getRowNum() == b.getRowNum() && a.getColumnNum() == b.getColumnNum();
   }
 
-  private boolean is2By2Matrix(Matrix a) {
-    return a.getRowNum() == 2 && a.getColumnNum() == 2;
-  }
 }
